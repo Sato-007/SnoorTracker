@@ -5,10 +5,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.GenericFontFamily
 
-val Inter = FontFamily(GenericFontFamily("sans-serif"))
-val JetBrainsMono = FontFamily(GenericFontFamily("monospace"))
+val Inter = FontFamily.SansSerif
+val JetBrainsMono = FontFamily.Monospace
 
 val Typography = Typography(
     headlineLarge = TextStyle(
