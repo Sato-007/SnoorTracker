@@ -1,0 +1,65 @@
+# ============================================
+# Android / Kotlin / Gradle .gitignore
+# ============================================
+
+# --- Gradle ---
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.properties
+
+# --- Android Studio / IntelliJ IDEA ---
+.idea/
+*.iml
+*.iws
+*.ipr
+local.properties
+captures/
+
+# --- Android Build Outputs ---
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# --- Compiled & Class Files ---
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# --- Signing & Keystore (sensitive) ---
+*.jks
+*.keystore
+signing.properties
+
+# --- Logs & Crash Reports ---
+*.log
+hs_err_pid*
+
+# --- OS Generated Files ---
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+
+# --- Misc ---
+*.swp
+*.swo
+*.bak
+*.tmp
+*.orig
+
+# --- Planning & AI Agent Files ---
+prototype/
+implementation_plan.md
+implementation_plan_v2.md
+.agents/
