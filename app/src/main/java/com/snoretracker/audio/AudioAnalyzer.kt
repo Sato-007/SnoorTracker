@@ -53,6 +53,10 @@ class AudioAnalyzer(private val context: Context) {
 
             val buffer = ShortArray(bufferSize)
             var consecutiveHighDb = 0
+            var consecutiveLowDb = 0
+            var isCurrentlySnoring = false
+            var currentSnoreStartTime = 0L
+            var currentSnorePeakDb = 0f
             
             while (isActive && isRecording) {
                 val readResult = audioRecord?.read(buffer, 0, bufferSize) ?: 0
@@ -70,20 +74,49 @@ class AudioAnalyzer(private val context: Context) {
 
                     if (db >= ServiceState.sensitivityThreshold) {
                         consecutiveHighDb++
-                        if (consecutiveHighDb >= 2) {
-                            val event = SnoreEvent(
-                                timestamp = System.currentTimeMillis(),
-                                peakDb = db,
-                                durationMs = 100L 
-                            )
-                            ServiceState.addSnoreEvent(event)
-                            consecutiveHighDb = 0 
+                        consecutiveLowDb = 0
+                        
+                        if (!isCurrentlySnoring && consecutiveHighDb >= 2) {
+                            isCurrentlySnoring = true
+                            currentSnoreStartTime = System.currentTimeMillis() - 200 // Account for the 2 chunks
+                            currentSnorePeakDb = db
+                        } else if (isCurrentlySnoring) {
+                            if (db > currentSnorePeakDb) {
+                                currentSnorePeakDb = db
+                            }
                         }
                     } else {
                         consecutiveHighDb = 0
+                        if (isCurrentlySnoring) {
+                            consecutiveLowDb++
+                            if (consecutiveLowDb >= 5) { // 500ms cooldown
+                                val duration = System.currentTimeMillis() - currentSnoreStartTime - 500
+                                val event = SnoreEvent(
+                                    timestamp = currentSnoreStartTime,
+                                    peakDb = currentSnorePeakDb,
+                                    durationMs = duration
+                                )
+                                ServiceState.addSnoreEvent(event)
+                                isCurrentlySnoring = false
+                                consecutiveLowDb = 0
+                            }
+                        } else {
+                            consecutiveLowDb = 0
+                        }
                     }
                 }
                 delay(100) 
+            }
+            
+            // Flush any ongoing snore when stopping
+            if (isCurrentlySnoring) {
+                val duration = System.currentTimeMillis() - currentSnoreStartTime
+                val event = SnoreEvent(
+                    timestamp = currentSnoreStartTime,
+                    peakDb = currentSnorePeakDb,
+                    durationMs = duration
+                )
+                ServiceState.addSnoreEvent(event)
             }
         } catch (e: Exception) {
             Log.e("AudioAnalyzer", "Error recording audio", e)
