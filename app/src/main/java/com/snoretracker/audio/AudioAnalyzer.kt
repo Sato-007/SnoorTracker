@@ -91,12 +91,14 @@ class AudioAnalyzer(private val context: Context) {
                             consecutiveLowDb++
                             if (consecutiveLowDb >= 5) { // 500ms cooldown
                                 val duration = System.currentTimeMillis() - currentSnoreStartTime - 500
-                                val event = SnoreEvent(
-                                    timestamp = currentSnoreStartTime,
-                                    peakDb = currentSnorePeakDb,
-                                    durationMs = duration
-                                )
-                                ServiceState.addSnoreEvent(event)
+                                if (duration in ServiceState.minSnoreDurationMs..ServiceState.maxSnoreDurationMs) {
+                                    val event = SnoreEvent(
+                                        timestamp = currentSnoreStartTime,
+                                        peakDb = currentSnorePeakDb,
+                                        durationMs = duration
+                                    )
+                                    ServiceState.addSnoreEvent(event)
+                                }
                                 isCurrentlySnoring = false
                                 consecutiveLowDb = 0
                             }
@@ -111,12 +113,14 @@ class AudioAnalyzer(private val context: Context) {
             // Flush any ongoing snore when stopping
             if (isCurrentlySnoring) {
                 val duration = System.currentTimeMillis() - currentSnoreStartTime
-                val event = SnoreEvent(
-                    timestamp = currentSnoreStartTime,
-                    peakDb = currentSnorePeakDb,
-                    durationMs = duration
-                )
-                ServiceState.addSnoreEvent(event)
+                if (duration in ServiceState.minSnoreDurationMs..ServiceState.maxSnoreDurationMs) {
+                    val event = SnoreEvent(
+                        timestamp = currentSnoreStartTime,
+                        peakDb = currentSnorePeakDb,
+                        durationMs = duration
+                    )
+                    ServiceState.addSnoreEvent(event)
+                }
             }
         } catch (e: Exception) {
             Log.e("AudioAnalyzer", "Error recording audio", e)

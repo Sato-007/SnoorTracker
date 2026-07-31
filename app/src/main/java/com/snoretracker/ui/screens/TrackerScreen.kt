@@ -54,8 +54,17 @@ private fun IdleState(state: TrackerUiState, viewModel: SnoreViewModel, context:
         modifier = Modifier.fillMaxWidth()
     )
     
-    Spacer(modifier = Modifier.height(48.dp))
+    Spacer(modifier = Modifier.height(24.dp))
     
+    Text("Duration Range: ${state.minSnoreDurationMs}ms - ${state.maxSnoreDurationMs}ms", style = MaterialTheme.typography.titleMedium)
+    RangeSlider(
+        value = state.minSnoreDurationMs.toFloat()..state.maxSnoreDurationMs.toFloat(),
+        onValueChange = { range -> viewModel.setDurationRange(range.start.toLong(), range.endInclusive.toLong()) },
+        valueRange = 500f..15000f,
+        modifier = Modifier.fillMaxWidth()
+    )
+    
+    Spacer(modifier = Modifier.height(48.dp))
     Button(
         onClick = {
             if (PermissionHelper.hasMicrophonePermission(context)) {

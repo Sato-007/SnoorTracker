@@ -18,6 +18,8 @@ object ServiceState {
     var sessionStartTime: Long = 0L
 
     var sensitivityThreshold: Float = 50f 
+    var minSnoreDurationMs: Long = 800L
+    var maxSnoreDurationMs: Long = 10000L
 
     fun setTracking(tracking: Boolean) {
         _isTracking.value = tracking

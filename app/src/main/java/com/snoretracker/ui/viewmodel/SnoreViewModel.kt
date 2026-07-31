@@ -25,6 +25,8 @@ data class TrackerUiState(
     val currentDb: Float = 0f,
     val amplitudeHistory: List<Float> = emptyList(),
     val sensitivityThreshold: Float = 50f,
+    val minSnoreDurationMs: Long = 800L,
+    val maxSnoreDurationMs: Long = 10000L,
     val sessionStartTime: Long = 0L,
     val elapsedTimeMs: Long = 0L,
     val snoreEventCount: Int = 0,
@@ -106,6 +108,12 @@ class SnoreViewModel(application: Application) : AndroidViewModel(application) {
         _trackerUiState.update { it.copy(sensitivityThreshold = db) }
     }
 
+    fun setDurationRange(minMs: Long, maxMs: Long) {
+        ServiceState.minSnoreDurationMs = minMs
+        ServiceState.maxSnoreDurationMs = maxMs
+        _trackerUiState.update { it.copy(minSnoreDurationMs = minMs, maxSnoreDurationMs = maxMs) }
+    }
+
     fun setPermissions(mic: Boolean, notif: Boolean) {
         _trackerUiState.update { it.copy(hasMicPermission = mic, hasNotificationPermission = notif) }
     }
@@ -120,7 +128,9 @@ class SnoreViewModel(application: Application) : AndroidViewModel(application) {
                 trackingStatus = TrackingStatus.IDLE,
                 hasMicPermission = it.hasMicPermission,
                 hasNotificationPermission = it.hasNotificationPermission,
-                sensitivityThreshold = it.sensitivityThreshold
+                sensitivityThreshold = it.sensitivityThreshold,
+                minSnoreDurationMs = it.minSnoreDurationMs,
+                maxSnoreDurationMs = it.maxSnoreDurationMs
             )
         }
     }
