@@ -3,6 +3,7 @@ package com.snoretracker.ui.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.snoretracker.data.SettingsManager
 import com.snoretracker.data.SnoreDatabase
 import com.snoretracker.data.SnoreEvent
 import com.snoretracker.data.SnoreRepository
@@ -50,14 +51,27 @@ data class HistoryUiState(
 
 class SnoreViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: SnoreRepository = SnoreRepository(SnoreDatabase.getDatabase(application).snoreDao())
+    private val settingsManager = SettingsManager(application)
 
-    private val _trackerUiState = MutableStateFlow(TrackerUiState())
+    private val _trackerUiState = MutableStateFlow(
+        TrackerUiState(
+            sensitivityThreshold = settingsManager.getSensitivity(),
+            silenceCooldownMs = settingsManager.getSilenceCooldown(),
+            minSnoreDurationMs = settingsManager.getMinDuration(),
+            maxSnoreDurationMs = settingsManager.getMaxDuration()
+        )
+    )
     val trackerUiState = _trackerUiState.asStateFlow()
 
     private val _historyUiState = MutableStateFlow(HistoryUiState(isLoading = true))
     val historyUiState = _historyUiState.asStateFlow()
 
     init {
+        ServiceState.sensitivityThreshold = settingsManager.getSensitivity()
+        ServiceState.silenceCooldownMs = settingsManager.getSilenceCooldown()
+        ServiceState.minSnoreDurationMs = settingsManager.getMinDuration()
+        ServiceState.maxSnoreDurationMs = settingsManager.getMaxDuration()
+
         viewModelScope.launch {
             repository.allSessions.collect { sessions ->
                 _historyUiState.update { it.copy(sessions = sessions, isLoading = false) }
@@ -112,16 +126,20 @@ class SnoreViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setSensitivity(db: Float) {
+        settingsManager.setSensitivity(db)
         ServiceState.sensitivityThreshold = db
         _trackerUiState.update { it.copy(sensitivityThreshold = db) }
     }
 
     fun setSilenceCooldown(ms: Long) {
+        settingsManager.setSilenceCooldown(ms)
         ServiceState.silenceCooldownMs = ms
         _trackerUiState.update { it.copy(silenceCooldownMs = ms) }
     }
 
     fun setDurationRange(minMs: Long, maxMs: Long) {
+        settingsManager.setMinDuration(minMs)
+        settingsManager.setMaxDuration(maxMs)
         ServiceState.minSnoreDurationMs = minMs
         ServiceState.maxSnoreDurationMs = maxMs
         _trackerUiState.update { it.copy(minSnoreDurationMs = minMs, maxSnoreDurationMs = maxMs) }
