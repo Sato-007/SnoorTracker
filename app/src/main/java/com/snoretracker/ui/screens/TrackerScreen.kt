@@ -64,6 +64,16 @@ private fun IdleState(state: TrackerUiState, viewModel: SnoreViewModel, context:
         modifier = Modifier.fillMaxWidth()
     )
     
+    Spacer(modifier = Modifier.height(24.dp))
+    
+    Text("Silence Cooldown: ${state.silenceCooldownMs} ms", style = MaterialTheme.typography.titleMedium)
+    Slider(
+        value = state.silenceCooldownMs.toFloat(),
+        onValueChange = { viewModel.setSilenceCooldown(it.toLong()) },
+        valueRange = 100f..3000f,
+        modifier = Modifier.fillMaxWidth()
+    )
+    
     Spacer(modifier = Modifier.height(48.dp))
     Button(
         onClick = {

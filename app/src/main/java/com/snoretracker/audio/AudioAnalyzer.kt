@@ -89,8 +89,9 @@ class AudioAnalyzer(private val context: Context) {
                         consecutiveHighDb = 0
                         if (isCurrentlySnoring) {
                             consecutiveLowDb++
-                            if (consecutiveLowDb >= 5) { // 500ms cooldown
-                                val duration = System.currentTimeMillis() - currentSnoreStartTime - 500
+                            val requiredChunks = (ServiceState.silenceCooldownMs / 100).toInt().coerceAtLeast(1)
+                            if (consecutiveLowDb >= requiredChunks) {
+                                val duration = System.currentTimeMillis() - currentSnoreStartTime - ServiceState.silenceCooldownMs
                                 if (duration in ServiceState.minSnoreDurationMs..ServiceState.maxSnoreDurationMs) {
                                     val event = SnoreEvent(
                                         timestamp = currentSnoreStartTime,

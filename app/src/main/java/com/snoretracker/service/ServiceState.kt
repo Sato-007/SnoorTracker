@@ -18,6 +18,7 @@ object ServiceState {
     var sessionStartTime: Long = 0L
 
     var sensitivityThreshold: Float = 50f 
+    var silenceCooldownMs: Long = 500L
     var minSnoreDurationMs: Long = 800L
     var maxSnoreDurationMs: Long = 10000L
 
