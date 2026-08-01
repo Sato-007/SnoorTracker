@@ -132,7 +132,6 @@ class AudioAnalyzer(private val context: Context) {
 
     fun stop() {
         isRecording = false
-        ServiceState.setTracking(false)
         try {
             audioRecord?.stop()
             audioRecord?.release()

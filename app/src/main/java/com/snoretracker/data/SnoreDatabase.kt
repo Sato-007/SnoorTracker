@@ -21,7 +21,7 @@ abstract class SnoreDatabase : RoomDatabase() {
                     context.applicationContext,
                     SnoreDatabase::class.java,
                     "snore_database"
-                ).build()
+                ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance
             }

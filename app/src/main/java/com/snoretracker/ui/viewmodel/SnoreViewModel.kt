@@ -14,7 +14,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -94,14 +97,17 @@ class SnoreViewModel(application: Application) : AndroidViewModel(application) {
         }
         
         viewModelScope.launch {
-            while(true) {
-                if (_trackerUiState.value.trackingStatus == TrackingStatus.ACTIVE) {
-                    _trackerUiState.update {
-                        it.copy(elapsedTimeMs = System.currentTimeMillis() - it.sessionStartTime)
+            trackerUiState
+                .map { it.trackingStatus == TrackingStatus.ACTIVE }
+                .distinctUntilChanged()
+                .collectLatest { isActive ->
+                    while (isActive) {
+                        _trackerUiState.update {
+                            it.copy(elapsedTimeMs = System.currentTimeMillis() - it.sessionStartTime)
+                        }
+                        delay(1000)
                     }
                 }
-                delay(1000)
-            }
         }
     }
 
