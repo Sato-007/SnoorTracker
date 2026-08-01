@@ -132,6 +132,7 @@ class SnoreViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun markSessionStopped() {
+        ServiceState.setTracking(false)
         val state = _trackerUiState.value
         if (state.sessionStartTime > 0) {
             val events = state.snoreEvents
