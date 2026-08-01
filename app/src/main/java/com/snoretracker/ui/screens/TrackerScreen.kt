@@ -60,7 +60,7 @@ private fun IdleState(state: TrackerUiState, viewModel: SnoreViewModel, context:
     RangeSlider(
         value = state.minSnoreDurationMs.toFloat()..state.maxSnoreDurationMs.toFloat(),
         onValueChange = { range -> viewModel.setDurationRange(range.start.toLong(), range.endInclusive.toLong()) },
-        valueRange = 500f..15000f,
+        valueRange = 300f..3000f,
         modifier = Modifier.fillMaxWidth()
     )
     
