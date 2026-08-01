@@ -15,7 +15,8 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 
 class SnoreTrackerService : Service() {
-    private val serviceScope = CoroutineScope(Dispatchers.Main + Job())
+    private val serviceJob = Job()
+    private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
     private var audioAnalyzer: AudioAnalyzer? = null
 
     override fun onCreate() {
@@ -44,29 +45,7 @@ class SnoreTrackerService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         audioAnalyzer?.stop()
-        
-        val events = ServiceState.snoreEvents.value
-        val startTime = ServiceState.sessionStartTime
-        val endTime = System.currentTimeMillis()
-        val totalEvents = events.size
-        val totalDuration = events.sumOf { it.durationMs }
-        val peak = events.maxOfOrNull { it.peakDb } ?: 0f
-
-        if (startTime > 0) {
-            val session = SnoreSession(
-                startTime = startTime,
-                endTime = endTime,
-                totalSnoreEvents = totalEvents,
-                totalSnoreDurationMs = totalDuration,
-                peakDb = peak,
-                events = events
-            )
-            
-            val repository = SnoreRepository(SnoreDatabase.getDatabase(this).snoreDao())
-            serviceScope.launch(Dispatchers.IO) {
-                repository.saveSession(session)
-            }
-        }
+        serviceJob.cancel()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

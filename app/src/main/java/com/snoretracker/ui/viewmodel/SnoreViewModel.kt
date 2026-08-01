@@ -8,6 +8,7 @@ import com.snoretracker.data.SnoreEvent
 import com.snoretracker.data.SnoreRepository
 import com.snoretracker.data.SnoreSession
 import com.snoretracker.service.ServiceState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -119,6 +120,22 @@ class SnoreViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun markSessionStopped() {
+        val state = _trackerUiState.value
+        if (state.sessionStartTime > 0) {
+            val events = state.snoreEvents
+            val session = SnoreSession(
+                startTime = state.sessionStartTime,
+                endTime = System.currentTimeMillis(),
+                totalSnoreEvents = events.size,
+                totalSnoreDurationMs = events.sumOf { it.durationMs },
+                peakDb = events.maxOfOrNull { it.peakDb } ?: 0f,
+                events = events
+            )
+            
+            viewModelScope.launch(Dispatchers.IO) {
+                repository.saveSession(session)
+            }
+        }
         _trackerUiState.update { it.copy(trackingStatus = TrackingStatus.SUMMARY) }
     }
 
