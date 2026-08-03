@@ -34,7 +34,7 @@ class AudioAnalyzer(private val context: Context) {
 
         try {
             audioRecord = AudioRecord(
-                MediaRecorder.AudioSource.MIC,
+                ServiceState.audioSource,
                 sampleRate,
                 channelConfig,
                 audioFormat,
@@ -72,7 +72,13 @@ class AudioAnalyzer(private val context: Context) {
                     val db = AudioUtils.calculateDecibels(maxAmplitude)
                     ServiceState.updateDb(db)
 
-                    if (db >= ServiceState.sensitivityThreshold) {
+                    var isHighPitchNoise = false
+                    if (ServiceState.enableZcrFilter) {
+                        val zcr = AudioUtils.calculateZeroCrossingRate(buffer, readResult)
+                        isHighPitchNoise = (zcr > 0.07f)
+                    }
+
+                    if (db >= ServiceState.sensitivityThreshold && !isHighPitchNoise) {
                         consecutiveHighDb++
                         consecutiveLowDb = 0
                         

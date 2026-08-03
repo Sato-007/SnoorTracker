@@ -60,7 +60,9 @@ $RECYCLE.BIN/
 
 # --- Planning & AI Agent Files ---
 prototype/
+plan/
 implementation_plan.md
 implementation_plan_v2.md
 .agents/
 CURRENT_PROGRESS.md
+v1_audit_report.md

@@ -15,6 +15,9 @@ interface SnoreDao {
     @Delete
     suspend fun deleteSession(session: SnoreSession)
 
+    @Query("DELETE FROM snore_session")
+    suspend fun deleteAllSessions()
+
     @Query("SELECT * FROM snore_session ORDER BY startTime DESC")
     fun getAllSessions(): Flow<List<SnoreSession>>
     

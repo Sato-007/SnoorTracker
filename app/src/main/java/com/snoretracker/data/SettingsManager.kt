@@ -17,4 +17,10 @@ class SettingsManager(context: Context) {
 
     fun getMaxDuration(): Long = prefs.getLong("max_duration", 3000L)
     fun setMaxDuration(value: Long) = prefs.edit().putLong("max_duration", value).apply()
+
+    fun getEnableZcrFilter(): Boolean = prefs.getBoolean("enable_zcr", true)
+    fun setEnableZcrFilter(value: Boolean) = prefs.edit().putBoolean("enable_zcr", value).apply()
+
+    fun getAudioSource(): Int = prefs.getInt("audio_source", android.media.MediaRecorder.AudioSource.MIC)
+    fun setAudioSource(value: Int) = prefs.edit().putInt("audio_source", value).apply()
 }

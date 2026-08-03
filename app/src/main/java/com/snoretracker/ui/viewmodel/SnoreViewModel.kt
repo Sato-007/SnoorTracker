@@ -33,6 +33,8 @@ data class TrackerUiState(
     val silenceCooldownMs: Long = 500L,
     val minSnoreDurationMs: Long = 300L,
     val maxSnoreDurationMs: Long = 3000L,
+    val enableZcrFilter: Boolean = true,
+    val audioSource: Int = android.media.MediaRecorder.AudioSource.MIC,
     val sessionStartTime: Long = 0L,
     val elapsedTimeMs: Long = 0L,
     val snoreEventCount: Int = 0,
@@ -58,7 +60,9 @@ class SnoreViewModel(application: Application) : AndroidViewModel(application) {
             sensitivityThreshold = settingsManager.getSensitivity(),
             silenceCooldownMs = settingsManager.getSilenceCooldown(),
             minSnoreDurationMs = settingsManager.getMinDuration(),
-            maxSnoreDurationMs = settingsManager.getMaxDuration()
+            maxSnoreDurationMs = settingsManager.getMaxDuration(),
+            enableZcrFilter = settingsManager.getEnableZcrFilter(),
+            audioSource = settingsManager.getAudioSource()
         )
     )
     val trackerUiState = _trackerUiState.asStateFlow()
@@ -71,6 +75,8 @@ class SnoreViewModel(application: Application) : AndroidViewModel(application) {
         ServiceState.silenceCooldownMs = settingsManager.getSilenceCooldown()
         ServiceState.minSnoreDurationMs = settingsManager.getMinDuration()
         ServiceState.maxSnoreDurationMs = settingsManager.getMaxDuration()
+        ServiceState.enableZcrFilter = settingsManager.getEnableZcrFilter()
+        ServiceState.audioSource = settingsManager.getAudioSource()
 
         viewModelScope.launch {
             repository.allSessions.collect { sessions ->
@@ -145,6 +151,18 @@ class SnoreViewModel(application: Application) : AndroidViewModel(application) {
         _trackerUiState.update { it.copy(minSnoreDurationMs = minMs, maxSnoreDurationMs = maxMs) }
     }
 
+    fun setEnableZcrFilter(enabled: Boolean) {
+        settingsManager.setEnableZcrFilter(enabled)
+        ServiceState.enableZcrFilter = enabled
+        _trackerUiState.update { it.copy(enableZcrFilter = enabled) }
+    }
+
+    fun setAudioSource(source: Int) {
+        settingsManager.setAudioSource(source)
+        ServiceState.audioSource = source
+        _trackerUiState.update { it.copy(audioSource = source) }
+    }
+
     fun setPermissions(mic: Boolean, notif: Boolean) {
         _trackerUiState.update { it.copy(hasMicPermission = mic, hasNotificationPermission = notif) }
     }
@@ -179,7 +197,9 @@ class SnoreViewModel(application: Application) : AndroidViewModel(application) {
                 sensitivityThreshold = it.sensitivityThreshold,
                 silenceCooldownMs = it.silenceCooldownMs,
                 minSnoreDurationMs = it.minSnoreDurationMs,
-                maxSnoreDurationMs = it.maxSnoreDurationMs
+                maxSnoreDurationMs = it.maxSnoreDurationMs,
+                enableZcrFilter = it.enableZcrFilter,
+                audioSource = it.audioSource
             )
         }
     }
@@ -194,6 +214,13 @@ class SnoreViewModel(application: Application) : AndroidViewModel(application) {
             if (_historyUiState.value.selectedSession?.id == session.id) {
                 selectHistorySession(null)
             }
+        }
+    }
+
+    fun deleteAllSessions() {
+        viewModelScope.launch {
+            repository.deleteAllSessions()
+            selectHistorySession(null)
         }
     }
 }

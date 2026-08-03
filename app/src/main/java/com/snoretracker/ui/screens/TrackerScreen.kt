@@ -5,8 +5,12 @@ import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -75,7 +79,61 @@ private fun IdleState(state: TrackerUiState, viewModel: SnoreViewModel, context:
         modifier = Modifier.fillMaxWidth()
     )
     
-    Spacer(modifier = Modifier.height(48.dp))
+    Spacer(modifier = Modifier.height(24.dp))
+
+    Text("Microphone Source", style = MaterialTheme.typography.titleMedium)
+    var expanded by remember { mutableStateOf(false) }
+    @OptIn(ExperimentalMaterial3Api::class)
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            value = if (state.audioSource == android.media.MediaRecorder.AudioSource.MIC) "Standard Mic (MIC)" else "Far-Field (CAMCORDER)",
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.menuAnchor().fillMaxWidth()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text("Standard Mic (MIC)") },
+                onClick = {
+                    viewModel.setAudioSource(android.media.MediaRecorder.AudioSource.MIC)
+                    expanded = false
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Far-Field (CAMCORDER)") },
+                onClick = {
+                    viewModel.setAudioSource(android.media.MediaRecorder.AudioSource.CAMCORDER)
+                    expanded = false
+                }
+            )
+        }
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { viewModel.setEnableZcrFilter(!state.enableZcrFilter) }
+    ) {
+        Checkbox(
+            checked = state.enableZcrFilter,
+            onCheckedChange = { viewModel.setEnableZcrFilter(it) }
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Filter High-Pitch / Cough Noise (ZCR)", style = MaterialTheme.typography.bodyMedium)
+    }
+    
+    Spacer(modifier = Modifier.height(32.dp))
     Button(
         onClick = {
             if (PermissionHelper.hasMicrophonePermission(context)) {

@@ -21,6 +21,8 @@ object ServiceState {
     var silenceCooldownMs: Long = 500L
     var minSnoreDurationMs: Long = 800L
     var maxSnoreDurationMs: Long = 10000L
+    var enableZcrFilter: Boolean = true
+    var audioSource: Int = android.media.MediaRecorder.AudioSource.MIC
 
     fun setTracking(tracking: Boolean) {
         _isTracking.value = tracking
